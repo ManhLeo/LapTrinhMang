@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+
 import Model.information;
 import Model.SaveInformationBO;
 
@@ -108,15 +110,48 @@ public class PdfController extends HttpServlet {
             Timestamp currentTime = Timestamp.valueOf(LocalDateTime.now());
             int InforID = saveInformationBO.saveFileInformation(userId, currentTime, pdfFile.getName(), finalOutputDocx, status);
             
-            try {
-                PdfToDocxConverter.convertPdfToDocx(pdfFile.getAbsolutePath(), finalOutputDocx);
-                status = "Success";
+            try (PDDocument document = PDDocument.load(pdfFile)) {
+                int pagesPerSplit = 10;
+                int totalPages = document.getNumberOfPages();
+
+                String[] docxFiles = new String[(totalPages / pagesPerSplit) + (totalPages % pagesPerSplit > 0 ? 1 : 0)];
+
+                for (int i = 0; i < totalPages; i += pagesPerSplit) {
+                    try (PDDocument splitDocument = new PDDocument()) {
+                        for (int j = i; j < i + pagesPerSplit && j < totalPages; j++) {
+                            splitDocument.addPage(document.getPage(j));
+                        }
+
+                        String splitPdfPath = outputPath + "/split-" + (i / pagesPerSplit + 1) + ".pdf";
+                        splitDocument.save(splitPdfPath);
+
+                        String docxOutputPath = outputPath + "/sample-" + (i / pagesPerSplit + 1) + ".docx";
+                        PdfToDocxConverter.convertPdfToDocx(splitPdfPath, docxOutputPath);
+                        docxFiles[i / pagesPerSplit] = docxOutputPath;
+
+                        new File(splitPdfPath).delete();
+                    }
+                }
+
+                PdfToDocxConverter.mergeDocxFiles(docxFiles, finalOutputDocx);
+
+
+                for (String docxFile : docxFiles) {
+                    new File(docxFile).delete();
+                }
+
+                status = "Success"; 
+
             } catch (Exception e) {
                 e.printStackTrace();
                 status = "Failed";
-            }
+            } finally {
+                saveInformationBO.UpdateInformation(InforID, status);
 
-            saveInformationBO.UpdateInformation(InforID, status);
+                if (!pdfFile.delete()) {
+                    System.err.println("Failed to delete file: " + pdfFile.getAbsolutePath());
+                }
+            }
         }
     }
 }
