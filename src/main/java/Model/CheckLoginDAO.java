@@ -15,11 +15,11 @@ public class CheckLoginDAO {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                return rs.getInt("UserID"); // Trả về ID người dùng
+                return rs.getInt("UserID");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return -1; // Trả về -1 nếu không tìm thấy
+        return -1;
     }
 }

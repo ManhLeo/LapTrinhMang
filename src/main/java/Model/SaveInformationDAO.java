@@ -23,12 +23,11 @@ public class SaveInformationDAO {
 	        int result = pstmt.executeUpdate();
 
 	        if (result > 0) {
-	            // Lấy ID của bản ghi vừa mới thêm vào
 	            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
 	                if (generatedKeys.next()) {
-	                    return generatedKeys.getInt(1); // Trả về inforID vừa được tạo
+	                    return generatedKeys.getInt(1);
 	                } else {
-	                    return -1; // Trả về -1 nếu không có ID được tạo
+	                    return -1;
 	                }
 	            }
 	        }

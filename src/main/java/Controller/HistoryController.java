@@ -26,13 +26,10 @@ public class HistoryController extends HttpServlet {
             return;
         }
 
-        // Lấy danh sách lịch sử từ SaveInformationBO
         SaveInformationBO saveInformationBO = new SaveInformationBO();
         List<information> fileHistory = saveInformationBO.getFileHistory(userId);
 
-        // Đặt fileHistory vào request attribute để gửi đến History.jsp
         request.setAttribute("fileHistory", fileHistory);
-        // Chuyển hướng tới History.jsp
         request.getRequestDispatcher("History.jsp").forward(request, response);
     }
 }

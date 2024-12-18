@@ -17,7 +17,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            // AJAX form submission
             $('#convertForm').on('submit', function (e) {
                 e.preventDefault();
 
@@ -59,7 +58,6 @@
         </div>
     </div>
 
-    <!-- Chức năng chuyển đổi PDF thành DOCX -->
     <div class="Converter" id="Converter">
         <h1>PDF to Docx Converter</h1>
         <div class="Converter_item">

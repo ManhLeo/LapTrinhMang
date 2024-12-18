@@ -2,11 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%
-    // Kiểm tra session và lấy thông tin userId và username
     Integer userId = (Integer) session.getAttribute("UserID");
     String username = (String) session.getAttribute("Username");
 
-    // Nếu chưa đăng nhập, chuyển hướng đến trang Login.jsp
     if (userId == null || username == null) {
         response.sendRedirect("Login.jsp");
     }
@@ -46,17 +44,15 @@
 	            <th>Trạng thái</th>
 	            <th>Tải về</th>
 	        </tr>
-	        <!-- Lặp qua danh sách fileHistory -->
 	        <c:forEach var="history" items="${fileHistory}" varStatus="status">
 	            <tr>
-	                <td>${status.index + 1}</td> <!-- Hiển thị số thứ tự -->
+	                <td>${status.index + 1}</td> 
 	                <td>${history.fileName}</td>
 	                <td>${history.dateConvert}</td>
 	                <td style="color: ${history.status == 'Success' ? 'green' : 'red'};">
 	                    ${history.status}
 	                </td>
 	                <td>
-	                    <!-- Kiểm tra trạng thái và hiển thị liên kết tải về nếu thành công -->
 	                    <c:choose>
 						    <c:when test="${history.status == 'Success'}">
 						        <a href="DownloadController?inforId=${history.inforID}">

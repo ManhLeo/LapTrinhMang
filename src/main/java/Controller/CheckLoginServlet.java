@@ -29,15 +29,14 @@ public class CheckLoginServlet extends HttpServlet {
             int userId = checkLoginBO.getUserId(username, password);
 
             if (userId != -1) {
-                // Lưu ID người dùng vào session
                 HttpSession session = request.getSession();
                 session.setAttribute("UserID", userId);
                 session.setAttribute("Username", username);
 
-                destination = "/Main.jsp"; // Chuyển đến trang chính
+                destination = "/Main.jsp";
             } else {
                 request.setAttribute("errorMessage", "Invalid username or password.");
-                destination = "/Login.jsp"; // Quay lại trang đăng nhập
+                destination = "/Login.jsp";
             }
         } catch (Exception e) {
             request.setAttribute("errorMessage", "An error occurred. Please try again later.");

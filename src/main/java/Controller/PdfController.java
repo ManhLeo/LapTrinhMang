@@ -8,7 +8,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import Model.information;
-import Model.PdfToDocxConverter;
 import Model.SaveInformationBO;
 
 import jakarta.servlet.ServletException;
@@ -41,12 +40,11 @@ public class PdfController extends HttpServlet {
         File outputDir = new File(outputPath);
 
      if (!outputDir.exists()) {
-         outputDir.mkdirs(); // Tạo thư mục nếu chưa tồn tại
+         outputDir.mkdirs();
      }
 
-        outputPath = outputPath.replace("\\", "/"); // Chuẩn hóa đường dẫn
+        outputPath = outputPath.replace("\\", "/");
 
-        // Lấy danh sách các file đã chọn
         Part[] pdfParts = request.getParts().stream()
                 .filter(part -> part.getName().equals("pdfFile"))
                 .toArray(Part[]::new);
@@ -56,7 +54,6 @@ public class PdfController extends HttpServlet {
             return;
         }
 
-        // Lấy userId từ session
         HttpSession session = request.getSession(false);
         Integer userId = (session != null) ? (Integer) session.getAttribute("UserID") : null;
 
@@ -65,26 +62,22 @@ public class PdfController extends HttpServlet {
             return;
         }
 
-        // Lưu các file vào hàng đợi để xử lý
         for (Part pdfPart : pdfParts) {
             String pdfFileName = pdfPart.getSubmittedFileName();
             if (pdfFileName != null && !pdfFileName.isEmpty()) {
                 File uploadedFile = new File(outputPath + "/" + pdfFileName);
                 pdfPart.write(uploadedFile.getAbsolutePath());
 
-                // Thêm file vào hàng đợi để xử lý
                 pdfQueue.offer(uploadedFile);
             }
         }
 
-        // Nếu chưa bắt đầu xử lý, khởi động xử lý hàng đợi
         if (!isProcessing) {
             isProcessing = true;
             new Thread(new PdfProcessor(outputPath, userId)).start();
         }
 
-        // Không chuyển hướng, vẫn giữ nguyên trang
-        //response.getWriter().write("Conversion started, files are being processed.");
+        response.getWriter().write("Conversion started, files are being processed.");
     }
 
     private static class PdfProcessor implements Runnable {
@@ -110,17 +103,17 @@ public class PdfController extends HttpServlet {
 
         private void processPdf(File pdfFile) {
             SaveInformationBO saveInformationBO = new SaveInformationBO();
-            String status = "Waiting";  // Đặt trạng thái ban đầu là "Waiting"
+            String status = "Waiting";
             String finalOutputDocx = outputPath + "/output_" + pdfFile.getName().replace(".pdf", ".docx");
             Timestamp currentTime = Timestamp.valueOf(LocalDateTime.now());
             int InforID = saveInformationBO.saveFileInformation(userId, currentTime, pdfFile.getName(), finalOutputDocx, status);
             
             try {
                 PdfToDocxConverter.convertPdfToDocx(pdfFile.getAbsolutePath(), finalOutputDocx);
-                status = "Success"; // Sau khi chuyển đổi xong, thay đổi trạng thái thành "Success"
+                status = "Success";
             } catch (Exception e) {
                 e.printStackTrace();
-                status = "Failed"; // Nếu có lỗi trong quá trình chuyển đổi, đánh dấu là "Failed"
+                status = "Failed";
             }
 
             saveInformationBO.UpdateInformation(InforID, status);
